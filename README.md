@@ -199,7 +199,7 @@ final-project-elec3/
 │   ├── index.html
 │   ├── script.js
 │   └── style.css
-└── README.md
+
 ```
 
 ---
