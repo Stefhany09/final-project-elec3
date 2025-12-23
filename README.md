@@ -177,12 +177,6 @@ For better testing with APIs:
 # Using Python 3
 python -m http.server 8000
 
-# Using Node.js
-npx http-server
-
-# Then visit: http://localhost:8000
-```
-
 ---
 
 ## 📁 Project Structure
