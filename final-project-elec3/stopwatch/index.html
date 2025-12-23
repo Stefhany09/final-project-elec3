@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stopwatch</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <div class="neon-border"></div>
+      <section class="panel">
+        <div class="header">
+          <h1 class="title">TIMER</h1>
+          <span class="pulse"></span>
+        </div>
+
+        <div class="display" aria-live="polite">
+          <div class="time" id="time">00:00:00.00</div>
+        </div>
+
+        <div class="controls">
+          <button class="btn fn" id="startPause">Start</button>
+          <button class="btn op" id="reset" disabled>Reset</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dictionary Search (API)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="neon-border" aria-hidden="true"></div>
+  <main class="wrap">
+    <header class="header">
+      <div class="header-top">
+        <div>
+          <h1>Dictionary API</h1>
+          <p>Search any English word and see meaning, phonetics, examples, and audio.</p>
+        </div>
+        <button id="themeToggle" type="button" class="ghost-btn" aria-pressed="false" aria-label="Toggle light or dark mode">Light</button>
+      </div>
+    </header>
+
+    <section class="controls">
+      <label class="sr-only" for="wordInput">Search word</label>
+      <input id="wordInput" type="text" placeholder="Type a word (e.g., inspiration)" />
+      <button id="searchBtn" type="button">Search</button>
+    </section>
+
+    <section class="status">
+      <div id="loading" class="loading hidden">Loading…</div>
+      <div id="error" class="error hidden"></div>
+    </section>
+
+    <section id="results" class="results" aria-live="polite"></section>
+
+    <footer class="footer">
+      <p>Powered by <a href="https://dictionaryapi.dev" target="_blank" rel="noopener noreferrer">Free Dictionary API</a></p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
