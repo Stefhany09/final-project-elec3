@@ -1,14 +1,17 @@
+
+// OpenWeatherMap API key
 const API_KEY = "bf54bde5769e9660fde812d689df121b";
 
-// APIs (BONUS: multiple API calls combined)
+// API endpoint URLs
 const GEO_URL = "https://api.openweathermap.org/geo/1.0/direct";
 const WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
 const FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast";
 
-// DOM
+// DOM element references
 const cityInput = document.getElementById("cityInput");
 const searchBtn = document.getElementById("searchBtn");
 const statusEl = document.getElementById("status");
+const spinner = document.getElementById("spinner");
 const errorBox = document.getElementById("errorBox");
 const placeSelect = document.getElementById("placeSelect");
 const themeToggle = document.getElementById("themeToggle");
@@ -26,9 +29,11 @@ const windEl = document.getElementById("wind");
 const forecastBox = document.getElementById("forecastBox");
 const forecastGrid = document.getElementById("forecastGrid");
 
+
+// Key for saving theme preference in localStorage
 const THEME_KEY = "weather-theme";
 
-// Weather icon mapping
+// Returns an emoji icon based on weather code and description
 function getWeatherIcon(weatherCode, description = "") {
   const code = String(weatherCode);
   const desc = description.toLowerCase();
@@ -70,35 +75,42 @@ function getWeatherIcon(weatherCode, description = "") {
   return "🌡️";
 }
 
-// UI helpers
+// --- UI Helper Functions ---
+// Show/hide loading state, update status message, and toggle spinner
 function setLoading(isLoading, msg = "") {
   statusEl.textContent = msg;
   searchBtn.disabled = isLoading;
   cityInput.disabled = isLoading;
   placeSelect.disabled = isLoading;
+  if (spinner) spinner.classList.toggle("hidden", !isLoading);
 }
 
+// Display an error message
 function showError(message) {
   errorBox.textContent = message;
   errorBox.classList.remove("hidden");
 }
 
+// Hide error message
 function clearError() {
   errorBox.textContent = "";
   errorBox.classList.add("hidden");
 }
 
+// Hide weather and forecast results
 function hideResults() {
   weatherBox.classList.add("hidden");
   forecastBox.classList.add("hidden");
   forecastGrid.innerHTML = "";
 }
 
+// Hide the place selection dropdown
 function hidePlaceSelect() {
   placeSelect.classList.add("hidden");
   placeSelect.innerHTML = "";
 }
 
+// Validate city input (letters and punctuation, min 2 chars)
 function validateCityInput(value) {
   const city = value.trim();
   if (!city) return { ok: false, message: "Please enter a city/province name." };
@@ -110,6 +122,7 @@ function validateCityInput(value) {
   return { ok: true, city };
 }
 
+// Fetch JSON from a URL, throw error if not ok
 async function fetchJSON(url) {
   const res = await fetch(url);
   if (!res.ok) {
@@ -123,11 +136,12 @@ async function fetchJSON(url) {
   return res.json();
 }
 
+// Set the theme (day/night) and update button emoji
 function setTheme(isDay) {
   document.body.classList.toggle("day-mode", isDay);
 
   if (themeToggle) {
-    themeToggle.textContent = isDay ? "Night" : "Day";
+    themeToggle.textContent = isDay ? "🌙" : "☀️";
     themeToggle.setAttribute("aria-pressed", String(isDay));
   }
 
@@ -136,6 +150,7 @@ function setTheme(isDay) {
   } catch {}
 }
 
+// Initialize theme from localStorage
 function initTheme() {
   let saved = null;
   try {
@@ -144,7 +159,7 @@ function initTheme() {
   setTheme(saved === "day");
 }
 
-// Geocode: return up to 5 candidate locations
+// Geocode: return up to 5 candidate locations for a city name
 async function geocodeCityOptions(city) {
   const url = `${GEO_URL}?q=${encodeURIComponent(city)}&limit=5&appid=${API_KEY}`;
   const data = await fetchJSON(url);
@@ -154,21 +169,25 @@ async function geocodeCityOptions(city) {
   return data;
 }
 
+// Fetch current weather for given latitude and longitude
 async function getCurrentWeather(lat, lon) {
   const url = `${WEATHER_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
   return fetchJSON(url);
 }
 
+// Fetch forecast for given latitude and longitude
 async function getForecast(lat, lon) {
   const url = `${FORECAST_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
   return fetchJSON(url);
 }
 
+// Format a place object as a readable string
 function formatPlace(p) {
   const state = p.state ? `, ${p.state}` : "";
   return `${p.name}${state}, ${p.country}`;
 }
 
+// Populate the place selection dropdown with options
 function populatePlaceSelect(places) {
   placeSelect.innerHTML = "";
   for (const p of places) {
@@ -186,11 +205,12 @@ function populatePlaceSelect(places) {
   placeSelect.classList.remove("hidden");
 }
 
+// Get the currently selected place from dropdown
 function getSelectedPlace() {
   return JSON.parse(placeSelect.value);
 }
 
-// Render current weather
+// Render current weather data to the UI
 function showWeather(data, place) {
   const city = place?.name || data.name || "Unknown";
   const state = place?.state ? `, ${place.state}` : "";
@@ -218,7 +238,7 @@ function showWeather(data, place) {
   weatherBox.classList.remove("hidden");
 }
 
-// Forecast helpers (3-hour intervals) - extended to show all available days
+// Pick one forecast per day (closest to noon) from 3-hour interval list
 function pickDailyFrom3HourList(list) {
   const byDay = new Map();
 
@@ -251,6 +271,7 @@ function pickDailyFrom3HourList(list) {
   return chosen;
 }
 
+// Format a unix timestamp as day and date labels
 function formatDayLabel(unixSeconds) {
   const d = new Date(unixSeconds * 1000);
   const dayName = d.toLocaleDateString(undefined, { weekday: "short" });
@@ -258,6 +279,7 @@ function formatDayLabel(unixSeconds) {
   return { day: dayName, date };
 }
 
+// Render the forecast cards to the UI
 function showForecast(forecastData) {
   const list = forecastData.list || [];
   if (!list.length) return;
@@ -288,22 +310,26 @@ function showForecast(forecastData) {
   forecastBox.classList.remove("hidden");
 }
 
-// Run fetch for a selected place
+// Fetch and display weather and forecast for a selected place
 async function fetchForPlace(place) {
   hideResults();
   clearError();
 
   try {
     setLoading(true, "Loading weather...");
+    const start = Date.now();
 
     const current = await getCurrentWeather(place.lat, place.lon);
-    showWeather(current, place);
-
-    setLoading(true, "Loading extended forecast...");
     const forecast = await getForecast(place.lat, place.lon);
-    showForecast(forecast);
 
+    // Ensure spinner is visible for at least 1 second
+    const elapsed = Date.now() - start;
+    if (elapsed < 1000) {
+      await new Promise(res => setTimeout(res, 1000 - elapsed));
+    }
     setLoading(false, "");
+    showWeather(current, place);
+    showForecast(forecast);
   } catch (err) {
     console.error(err);
     setLoading(false, "");
@@ -311,7 +337,7 @@ async function fetchForPlace(place) {
   }
 }
 
-// Main search
+// Main search handler: validates input, fetches places, and shows weather
 async function runSearch() {
   clearError();
   hideResults();
@@ -338,7 +364,7 @@ async function runSearch() {
   }
 }
 
-// Events
+// --- Event Listeners ---
 searchBtn.addEventListener("click", runSearch);
 
 cityInput.addEventListener("keydown", (e) => {
