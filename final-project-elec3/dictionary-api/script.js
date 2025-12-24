@@ -16,6 +16,7 @@ const searchBtn = document.getElementById("searchBtn");
 const resultsEl = document.getElementById("results");
 const errorEl = document.getElementById("error");
 const loadingEl = document.getElementById("loading");
+const spinner = document.getElementById("spinner");
 const themeToggle = document.getElementById("themeToggle");
 
 const THEME_KEY = "dictionary-theme";
@@ -23,6 +24,7 @@ const THEME_KEY = "dictionary-theme";
 /** Utility: show/hide */
 function setLoading(isLoading) {
   loadingEl.classList.toggle("hidden", !isLoading);
+  if (spinner) spinner.classList.toggle("hidden", !isLoading);
   searchBtn.disabled = isLoading;
 }
 
@@ -233,9 +235,16 @@ async function handleSearch() {
   }
 
   setLoading(true);
-
+  const start = Date.now();
   try {
     const entries = await fetchWord(word);
+
+    // Ensure spinner is visible for at least 1 second
+    const elapsed = Date.now() - start;
+    if (elapsed < 1000) {
+      await new Promise(res => setTimeout(res, 1000 - elapsed));
+    }
+    setLoading(false);
 
     if (!Array.isArray(entries) || entries.length === 0) {
       showError("No results found.");
@@ -244,9 +253,8 @@ async function handleSearch() {
 
     entries.forEach(renderEntry);
   } catch (err) {
-    showError(`Failed: ${err.message || "API request failed."}`);
-  } finally {
     setLoading(false);
+    showError(`Failed: ${err.message || "API request failed."}`);
   }
 }
 
